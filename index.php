@@ -2,29 +2,7 @@
 
 include("autoloader.php");
 include("config.php");
-//include("cors.php");
-
-function handle_cors() {
-	if (isset($_SERVER['HTTP_ORIGIN'])) {
-		header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
-		header('Access-Control-Allow-Credentials: true');
-		header('Access-Control-Max-Age: 86400');
-	}
-
-	if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-		if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'])) {
-				header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-			}
-
-			if (isset($_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'])) {
-				header("Access-Control-Allow-Headers: {$_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS']}");
-			}
-		}
-		exit(0);
-	}
-
-}
+include("cors.php");
 
 handle_cors();
 
@@ -78,8 +56,10 @@ $results = [];
 foreach($curl_handles as $curl) {
 	$json = curl_multi_getcontent($curl);
 	$result = json_decode($json, true, 512, JSON_INVALID_UTF8_IGNORE);
-	foreach ($result["results"] as $search_result) {
-		$results[] = $search_result;
+	if ($result !== null) {
+		foreach ($result["results"] as $search_result) {
+			$results[] = $search_result;
+		}
 	}
 	curl_multi_remove_handle($curl_multi, $curl);
 }
@@ -201,4 +181,3 @@ if (isset($_GET['cb'])) {
 	echo json_encode($output);
 }
 
-?>
