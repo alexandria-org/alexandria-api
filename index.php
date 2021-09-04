@@ -6,6 +6,10 @@ include("cors.php");
 
 handle_cors();
 
+$results = [];
+$results_per_page = 10;
+$max_pages = 10;
+$current_page = 1;
 
 header("Content-Type: application/json");
 
@@ -15,6 +19,12 @@ if (!isset($_GET["q"]) or $_GET["q"] == "") {
 }
 
 $query = $_GET["q"];
+$current_page = $_GET['p'] ?? 1;
+
+if ($current_page < 1) $current_page = 1;
+if ($current_page > $max_pages) $current_page = $max_pages;
+$offset_start = ($current_page - 1) * $results_per_page;
+$offset_end = $offset_start + $results_per_page;
 
 function create_node_url($node, $query) {
 	return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query));
@@ -31,39 +41,66 @@ function create_curl_handle($url) {
 	return $curl;
 }
 
-$results = [];
-
-$curl_multi = curl_multi_init();
-$curl_handles = [];
-
-foreach ($nodes as $node) {
-
-	$url = create_node_url($node, $query);
-	$curl = create_curl_handle($url);
-
-	curl_multi_add_handle($curl_multi, $curl);
-	$curl_handles[] = $curl;
+function make_display_url($url) {
+	$parts = parse_url($url);
+	$new_host = idn_to_utf8($parts["host"]);
+	return str_replace($parts["host"], $new_host, $url);
 }
 
-do {
-	$status = curl_multi_exec($curl_multi, $active);
-	if ($active) {
-		curl_multi_select($curl_multi);
-	}
-} while ($active && $status == CURLM_OK);
+function make_search($nodes, $query) {
+	$curl_multi = curl_multi_init();
+	$curl_handles = [];
 
-$results = [];
-foreach($curl_handles as $curl) {
-	$json = curl_multi_getcontent($curl);
-	$result = json_decode($json, true, 512, JSON_INVALID_UTF8_IGNORE);
-	if ($result !== null) {
-		foreach ($result["results"] as $search_result) {
-			$results[] = $search_result;
+	$time_ms = microtime(true);
+
+	foreach ($nodes as $node) {
+
+		$url = create_node_url($node, $query);
+		$curl = create_curl_handle($url);
+
+		curl_multi_add_handle($curl_multi, $curl);
+		$curl_handles[] = $curl;
+	}
+
+	do {
+		$status = curl_multi_exec($curl_multi, $active);
+		if ($active) {
+			curl_multi_select($curl_multi);
 		}
+	} while ($active && $status == CURLM_OK);
+
+	$time_ms = (microtime(true) - $time_ms) * 1000;
+
+	$results = [];
+	$total_found = 0;
+	foreach($curl_handles as $curl) {
+		$json = curl_multi_getcontent($curl);
+		$result = json_decode($json, true, 512, JSON_INVALID_UTF8_IGNORE);
+		if ($result !== null) {
+			$total_found += $result["total_found"];
+			foreach ($result["results"] as $search_result) {
+				$results[] = $search_result;
+			}
+		}
+		curl_multi_remove_handle($curl_multi, $curl);
 	}
-	curl_multi_remove_handle($curl_multi, $curl);
+	curl_multi_close($curl_multi);
+
+	return [$results, $time_ms, $total_found];
 }
-curl_multi_close($curl_multi);
+
+$redis = new Redis();
+$redis->connect('127.0.0.1', 6379);
+
+list($results, $time_ms, $total_found) = [[], 0, 0];
+if ($cache = $redis->get($query)) {
+	list($results, $time_ms, $total_found) = unserialize($cache);
+} else {
+	$data = make_search($nodes, $query);
+	list($results, $time_ms, $total_found) = $data;
+	$redis->set($query, serialize($data));
+	$redis->expire($query, 86400);
+}
 
 for ($i = 0; $i < count($results); $i++) {
 
@@ -94,7 +131,7 @@ for ($i = 0; $i < count($results); $i++) {
 
 	//gamla artiklar (från 2000 - 2020 får lägre score)
 	if (preg_match('/\b\d{4}\b/', $snippet, $matches)) {
-		$result["year"] = $matches[0];
+		$result["year"] = intval($matches[0]);
 		if ($result["year"] < 2020 and $result["year"] > 2000) {
 			$result["is_old"] = 1;
 		}
@@ -154,7 +191,7 @@ for ($i = 0; $i < count($results); $i++) {
 // Sort the results by new_score
 array_multisort(array_column($results, "new_score"), SORT_DESC, $results);
 
-$resultCount = 0;
+$result_count = 0;
 $printed_domains = [];
 $output = [];
 foreach ($results as $result) {
@@ -166,18 +203,30 @@ foreach ($results as $result) {
 		$result["score"] = $result["new_score"];
 		unset($result["new_score"]);
 
-		$output[] = $result;
+		if ($result_count >= $offset_start && $result_count <= $offset_end) {
+			$result["display_url"] = make_display_url($result["url"]);
+			$output[] = $result;
+		}
+		$result_count++;
 
-		$resultCount++;
-		if ($resultCount > 50) {
+		if ($result_count >= $max_pages * $results_per_page) {
 			break;
 		}
 	}
 }
+$page_max = ceil($result_count / $results_per_page);
+
+$api_response = [
+	"status" => "success",
+	"time_ms" => $time_ms,
+	"total_found" => $total_found,
+	"page_max" => $page_max,
+	"results" => $output
+];
 
 if (isset($_GET['cb'])) {
-	echo $_GET['cb'] . "(" . json_encode($output) . ")";
+	echo $_GET['cb'] . "(" . json_encode($api_response) . ")";
 } else {
-	echo json_encode($output);
+	echo json_encode($api_response);
 }
 
