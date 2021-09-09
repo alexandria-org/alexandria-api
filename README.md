@@ -1,7 +1,8 @@
 # Alexandria.org API
 
 ## Run on docker
-Checkout the code, open a terminal (PowerShell on windows) and navigate to the directory.
+[Windows users guide:doc/building-on-windows.md]
+Checkout the code, open a terminal and navigate to the directory.
 1. Build docker image
 ```
 docker build . -t alexandria-api
