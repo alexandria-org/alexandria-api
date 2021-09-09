@@ -20,3 +20,4 @@ function handle_cors() {
 		exit(0);
 	}
 }
+

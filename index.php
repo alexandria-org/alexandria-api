@@ -1,6 +1,5 @@
 <?php
 
-include("autoloader.php");
 include("config.php");
 include("cors.php");
 
