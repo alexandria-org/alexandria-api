@@ -1,6 +1,7 @@
 # Alexandria.org API
 
 ## Run on docker
+Checkout the code, open a terminal (PowerShell on windows) and navigate to the directory.
 1. Build docker image
 ```
 docker build . -t alexandria-api
@@ -17,3 +18,4 @@ docker exec -it alexandria-api /bin/bash
 ```
 /alexandria-api/scripts/init-docker.sh
 ```
+5. Go to http://127.0.0.1:8080 and start development.
