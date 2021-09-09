@@ -1,7 +1,8 @@
 ## Running local docker on Windows.
 Make sure you have the following programs installed:
 1. https://www.docker.com/products/docker-desktop
-2. https://desktop.github.com/
+2. https://code.visualstudio.com/
+3. https://desktop.github.com/
 
 When you use github desktop to checkout this codebase the code usually ends up in:
 ```
