@@ -4,8 +4,10 @@ Make sure you have the following programs installed:
 2. https://code.visualstudio.com/
 3. https://desktop.github.com/
 
-When you use github desktop to checkout this codebase the code usually ends up in:
+Checkout this repository with github desktop. The code will end up in the following directory:
 ```
 /Users/[your username]/Documents/GitHub/alexandria-api
 ```
-and you have to navigate there with your windows PowerShell before you can continue with this guide: [guide](/README.md)
+Open windows PowerShell and nacigate to that directory.
+
+Continue with this guide: [guide](/README.md)
