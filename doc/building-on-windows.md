@@ -6,10 +6,8 @@ Make sure you have the following programs installed:
 
 Guide for installing docker on Windows: [https://docs.docker.com/desktop/windows/install/](https://docs.docker.com/desktop/windows/install/)
 
-Clone this repository using github desktop. The code will end up in the following directory:
-```
-/Users/[your username]/Documents/GitHub/alexandria-api
-```
-Open windows PowerShell and nacigate to that directory.
+Clone this repository using github desktop and locate the files on your computer.
+
+Open windows PowerShell and navigate to the alexandria-api directory.
 
 Continue with this guide: [guide](/README.md)
