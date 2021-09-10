@@ -4,7 +4,7 @@ Make sure you have the following programs installed:
 2. https://code.visualstudio.com/
 3. https://desktop.github.com/
 
-Checkout this repository with github desktop. The code will end up in the following directory:
+Clone this repository using github desktop. The code will end up in the following directory:
 ```
 /Users/[your username]/Documents/GitHub/alexandria-api
 ```
