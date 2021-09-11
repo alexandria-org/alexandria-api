@@ -67,7 +67,7 @@ function make_cached_search($query) {
 		$data = make_search(get_nodes(), $query);
 		list($results, $time_ms, $total_found) = $data;
 		$redis->set($query, serialize($data));
-		$redis->expire($query, 86400);
+		$redis->expire($query, cache_expire());
 		store_search_query($query, false);
 	}
 

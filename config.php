@@ -8,3 +8,7 @@ function get_nodes() {
 	];
 }
 
+function cache_expire() {
+	return 86400*7; // 1 week
+}
+
