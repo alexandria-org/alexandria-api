@@ -1,27 +1,24 @@
 <?php
 
 include("config.php");
-include("cors.php");
+include("functions.php");
 
 handle_cors();
+
+header("Content-Type: application/json");
 
 $results = [];
 $results_per_page = 10;
 $max_pages = 10;
 $current_page = 1;
 
-header("Content-Type: application/json");
-
-if (!isset($_GET["q"]) or $_GET["q"] == "") {
-	echo json_encode(["status" => "error", "reason" => "Missing query string"]);
-	die;
+try {
+	list($query, $current_page) = parse_input($_GET);
+} catch (Exception $error) {
+	error_response($error->getMessage());
+	exit();
 }
 
-$query = $_GET["q"];
-$current_page = $_GET['p'] ?? 1;
-
-if ($current_page < 1) $current_page = 1;
-if ($current_page > $max_pages) $current_page = $max_pages;
 $offset_start = ($current_page - 1) * $results_per_page;
 $offset_end = $offset_start + $results_per_page;
 
