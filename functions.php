@@ -236,7 +236,7 @@ function deduplicate_results($results, $offset_start, $offset_end) {
 		if (!isset($printed_domains[$result["domain"]])) {
 			$printed_domains[$result["domain"]] = 1;
 
-			if ($result_count >= $offset_start && $result_count <= $offset_end) {
+			if ($result_count >= $offset_start && $result_count < $offset_end) {
 				$output[] = $result;
 			}
 			$result_count++;
