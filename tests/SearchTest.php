@@ -10,5 +10,20 @@ final class SearchTest extends TestCase {
 		$this->assertEquals(count($results), 1000);
 	}
 
+	public function test_store_search() {
+
+		store_search_query("testing", false);
+		$search_query = latest_search_query();
+		
+		$this->assertEquals($search_query->search_query, "testing");
+		$this->assertFalse((bool)$search_query->search_cached);
+
+		store_search_query("testing 2", true);
+		$search_query = latest_search_query();
+		
+		$this->assertEquals($search_query->search_query, "testing 2");
+		$this->assertTrue((bool)$search_query->search_cached);
+	}
+
 }
 

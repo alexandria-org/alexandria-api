@@ -71,8 +71,8 @@ echo "server {
 /etc/init.d/redis-server restart
 /etc/init.d/mysql start
 
-mysql -u root -e "create user if not exists phpmyadmin@localhost identified by ''"
-mysql -u root -e "grant all privileges on *.* to phpmyadmin@localhost with grant option"
+mysql -u root -e "create user if not exists alexandria@localhost identified by ''"
+mysql -u root -e "grant all privileges on *.* to alexandria@localhost with grant option"
 
 # Write phpmyadmin config.
 
@@ -83,7 +83,7 @@ echo "<?php
 \$cfg['Servers'][1]['auth_type'] = 'config';
 \$cfg['Servers'][1]['host'] = 'localhost';
 \$cfg['Servers'][1]['compress'] = false;
-\$cfg['Servers'][1]['user'] = 'phpmyadmin';
+\$cfg['Servers'][1]['user'] = 'alexandria';
 \$cfg['Servers'][1]['password'] = '';
 \$cfg['Servers'][1]['AllowNoPassword'] = true;
 

@@ -1,5 +1,7 @@
 <?php
 
+include("db_functions.php");
+
 function handle_cors() {
 	if (isset($_SERVER['HTTP_ORIGIN'])) {
 		header("Access-Control-Allow-Origin: {$_SERVER['HTTP_ORIGIN']}");
@@ -60,11 +62,13 @@ function make_cached_search($query) {
 	list($results, $time_ms, $total_found) = [[], 0, 0];
 	if ($cache = $redis->get($query)) {
 		list($results, $time_ms, $total_found) = unserialize($cache);
+		store_search_query($query, true);
 	} else {
 		$data = make_search(get_nodes(), $query);
 		list($results, $time_ms, $total_found) = $data;
 		$redis->set($query, serialize($data));
 		$redis->expire($query, 86400);
+		store_search_query($query, false);
 	}
 
 	return [$results, $time_ms, $total_found];
