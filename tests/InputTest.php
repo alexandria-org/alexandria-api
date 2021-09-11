@@ -34,5 +34,13 @@ final class InputTest extends TestCase {
 		$this->assertEquals($current_page, max_pages());
 	}
 
+	public function test_calculate_offsets() {
+		$current_page = 1;
+		$results_per_page = 10;
+		list($offset_start, $offset_end) = calculate_offsets($current_page, $results_per_page);
+		$this->assertEquals($offset_start, 0);
+		$this->assertEquals($offset_end, 10);
+	}
+
 }
 

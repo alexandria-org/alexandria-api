@@ -25,6 +25,10 @@ function max_pages() {
 	return 10;
 }
 
+function results_per_page() {
+	return 10;
+}
+
 function parse_input($input) {
 	if (!isset($input["q"]) or $input["q"] == "") {
 		throw new Exception("Missing query string");
@@ -40,5 +44,12 @@ function parse_input($input) {
 
 function error_response($reason) {
 	echo json_encode(["status" => "error", "reason" => $reason]);
+}
+
+function calculate_offsets($current_page, $results_per_page) {
+	$offset_start = ($current_page - 1) * $results_per_page;
+	$offset_end = $offset_start + $results_per_page;
+
+	return [$offset_start, $offset_end];
 }
 

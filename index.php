@@ -19,8 +19,7 @@ try {
 	exit();
 }
 
-$offset_start = ($current_page - 1) * $results_per_page;
-$offset_end = $offset_start + $results_per_page;
+list($offset_start, $offset_end) = calculate_offsets($current_page, results_per_page());
 
 function create_node_url($node, $query) {
 	return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query));
