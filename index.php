@@ -7,11 +7,6 @@ handle_cors();
 
 header("Content-Type: application/json");
 
-$results = [];
-$results_per_page = 10;
-$max_pages = 10;
-$current_page = 1;
-
 try {
 	list($query, $current_page) = parse_input($_GET);
 } catch (Exception $error) {
