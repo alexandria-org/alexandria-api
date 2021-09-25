@@ -69,6 +69,10 @@ function parse_input($input) {
 	return [$input["q"], $current_page];
 }
 
+function should_deduplicate($query) {
+	return strpos($query, "site:") === false;
+}
+
 function error_response($reason) {
 	echo json_encode(["status" => "error", "reason" => $reason]);
 }
@@ -100,7 +104,10 @@ function make_cached_search($query) {
 }
 
 function create_node_url($node, $query) {
-	return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query));
+	if (should_deduplicate($query)) {
+		return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query));
+	}
+	return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query)) . "&d=a";
 }
 
 function create_curl_handle($url) {
@@ -270,6 +277,25 @@ function deduplicate_results($results, $offset_start, $offset_end) {
 			if ($result_count >= max_pages() * results_per_page()) {
 				break;
 			}
+		}
+	}
+
+	return [$output, $result_count];
+}
+
+function paginate_results($results, $offset_start, $offset_end) {
+
+	$result_count = 0;
+	$output = [];
+	foreach ($results as $result) {
+		// Make sure each domain is only printed once
+		if ($result_count >= $offset_start && $result_count < $offset_end) {
+			$output[] = $result;
+		}
+		$result_count++;
+
+		if ($result_count >= max_pages() * results_per_page()) {
+			break;
 		}
 	}
 
