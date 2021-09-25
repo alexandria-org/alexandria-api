@@ -203,7 +203,7 @@ foreach ($results as $result) {
 		$result["score"] = $result["new_score"];
 		unset($result["new_score"]);
 
-		if ($result_count >= $offset_start && $result_count <= $offset_end) {
+		if ($result_count >= $offset_start && $result_count < $offset_end) {
 			$result["display_url"] = make_display_url($result["url"]);
 			$output[] = $result;
 		}
