@@ -24,4 +24,40 @@ docker exec -it alexandria-api /bin/bash
 7. Run tests:
 ```
 ./phpunit --bootstrap functions.php tests
+
+## API Endpoints
+```
+https://api.alexandria.org/?q=test%20query&p=1&a=1
+```
+Parameters:
+```
+q: the query
+p: the page number 1 to 10
+a: anonymous flag, 0 for default behaviour 1 for anonymous search.
+```
+Response:
+```
+{
+   "status":"success",
+   "time_ms":535.438060760498,
+   "total_found":105245,
+   "page_max":10,
+   "results":[
+      {
+         "url":"https:\/\/github.com\/",
+         "title":"GitHub",
+         "snippet":"...",
+         "score":32.5283701133728,
+         "domain_hash":"5468486186948880458",
+         "url_hash":"5468481278583313044",
+         "exact_match":0,
+         "phrase_match":2,
+         "year":9999,
+         "is_old":0,
+         "is_subdomain":0,
+         "domain":"github.com",
+         "display_url":"https:\/\/github.com\/dannote\/recattle"
+      }
+   ]
+}
 ```
