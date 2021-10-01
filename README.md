@@ -20,3 +20,8 @@ docker exec -it alexandria-api /bin/bash
 ```
 5. Go to http://127.0.0.1:8080 and start development.
 6. Go to http://127.0.0.1:8081 to access and edit database.
+
+7. Run tests:
+```
+./phpunit --bootstrap functions.php tests
+```

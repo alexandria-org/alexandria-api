@@ -25,7 +25,57 @@
  * SOFTWARE.
  */
 
+include("config.php");
 include("db_functions.php");
+
+function handle_query($path, $get, $ip) {
+
+	if ($path == "/") {
+		return handle_search_query($path, $get, $ip);
+	} elseif ($path == "/ping") {
+		return handle_ping_query($path, $get, $ip);
+	} else {
+		return ["404", 404];
+	}
+}
+
+function handle_ping_query($path, $get, $ip) {
+	if (trim($get["data"] ?? '') == '') return ["Missing data", 400];
+
+	$data = parse_ping_data($get['data']);
+
+	store_ping($data->u, $data->q, $data->p, $ip);
+
+	return ["", 200];
+}
+
+function parse_ping_data($data) {
+	return json_decode(base64_decode($data));
+}
+
+function handle_search_query($path, $get, $ip) {
+	try {
+		list($query, $current_page, $anonymous) = parse_input($get);
+	} catch (Exception $error) {
+		return [error_response($error->getMessage()), 400];
+	}
+
+	list($offset_start, $offset_end) = calculate_offsets($current_page, results_per_page());
+	list($results, $time_ms, $total_found) = make_cached_search($query, $ip, $anonymous);
+	post_process_results($results, $query);
+	if (should_deduplicate($query)) {
+		list($output, $result_count) = deduplicate_results($results, $offset_start, $offset_end);
+	} else {
+		list($output, $result_count) = paginate_results($results, $offset_start, $offset_end);
+	}
+	add_display_url($output);
+	$page_max = calculate_page_max($result_count);
+	$api_response = get_api_response($time_ms, $total_found, $page_max, $output);
+
+	$response = make_response($api_response, $get['cb'] ?? '');
+
+	return [$response, 200];
+}
 
 function handle_cors() {
 	if (isset($_SERVER['HTTP_ORIGIN'])) {
@@ -66,7 +116,7 @@ function parse_input($input) {
 	if ($current_page < 1) $current_page = 1;
 	if ($current_page > max_pages()) $current_page = max_pages();
 
-	return [$input["q"], $current_page];
+	return [$input["q"], $current_page, (bool)($input["a"] ?? false)];
 }
 
 function should_deduplicate($query) {
@@ -84,20 +134,28 @@ function calculate_offsets($current_page, $results_per_page) {
 	return [$offset_start, $offset_end];
 }
 
-function make_cached_search($query) {
+function make_cached_search($query, $ip, $anonymous) {
 	$redis = new Redis();
 	$redis->connect('127.0.0.1', 6379);
 
 	list($results, $time_ms, $total_found) = [[], 0, 0];
 	if ($cache = $redis->get($query)) {
 		list($results, $time_ms, $total_found) = unserialize($cache);
-		store_search_query($query, true);
+		if ($anonymous) {
+			store_anonymous_cached_search_query();
+		} else {
+			store_cached_search_query($query, $ip);
+		}
 	} else {
 		$data = make_search(get_nodes(), $query);
 		list($results, $time_ms, $total_found) = $data;
 		$redis->set($query, serialize($data));
 		$redis->expire($query, cache_expire());
-		store_search_query($query, false);
+		if ($anonymous) {
+			store_anonymous_uncached_search_query();
+		} else {
+			store_uncached_search_query($query, $ip);
+		}
 	}
 
 	return [$results, $time_ms, $total_found];
@@ -257,6 +315,9 @@ function post_process_results(&$results, $query) {
 
 	// Sort the results by score
 	array_multisort(array_column($results, "score"), SORT_DESC, $results);
+
+	// Limit results to 1000
+	$results = array_slice($results, 0, 1000);
 }
 
 function deduplicate_results($results, $offset_start, $offset_end) {
@@ -322,11 +383,11 @@ function get_api_response($time_ms, $total_found, $page_max, $results) {
 	];
 }
 
-function print_response($api_response, $callback) {
+function make_response($api_response, $callback) {
 	if ($callback != '') {
-		echo $callback . "(" . json_encode($api_response) . ")";
+		return $callback . "(" . json_encode($api_response) . ")";
 	} else {
-		echo json_encode($api_response);
+		return json_encode($api_response);
 	}
 }
 

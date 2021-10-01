@@ -25,30 +25,24 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `search`
+-- Table structure for table `ping`
 --
 
-CREATE TABLE `search` (
-  `search_id` bigint(22) UNSIGNED NOT NULL,
-  `search_created` timestamp NOT NULL DEFAULT current_timestamp(),
-  `search_query` varchar(512) NOT NULL,
-  `search_cached` tinyint(1) NOT NULL DEFAULT 0,
-  `search_ip` varchar(50) NOT NULL
+CREATE TABLE `ping` (
+  `ping_id` bigint(22) UNSIGNED NOT NULL,
+  `ping_created` timestamp NOT NULL DEFAULT current_timestamp(),
+  `ping_query` varchar(200) NOT NULL,
+  `ping_url` varchar(500) NOT NULL,
+  `ping_pos` int(11) NOT NULL,
+  `ping_ip` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
--- Indexes for dumped tables
+-- Indexes for table `ping`
 --
+ALTER TABLE `ping`
+  ADD PRIMARY KEY (`ping_id`);
 
---
--- Indexes for table `search`
---
-ALTER TABLE `search`
-  ADD PRIMARY KEY (`search_id`);
-
---
--- AUTO_INCREMENT for dumped tables
---
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;

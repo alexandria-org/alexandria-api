@@ -61,12 +61,37 @@ function db_select($query, $params) {
 	return $statement->fetch();
 }
 
-function store_search_query($search_query, $cached) {
-	$query = "INSERT INTO search (search_query, search_cached) VALUES(?, ?)";
-	db_perform($query, [$search_query, $cached ? 1 : 0]);
+function store_ping($url, $query, $ping_pos, $ip) {
+	$db_query = "INSERT INTO ping (ping_url, ping_query, ping_pos, ping_ip) VALUES(?, ?, ?, ?)";
+	db_perform($db_query, [$url, $query, $ping_pos, $ip]);
+}
+
+function store_uncached_search_query($search_query, $ip) {
+	$query = "INSERT INTO search (search_query, search_cached, search_ip) VALUES(?, 0, ?)";
+	db_perform($query, [$search_query, $ip]);
+}
+
+function store_cached_search_query($search_query, $ip) {
+	$query = "INSERT INTO search (search_query, search_cached, search_ip) VALUES(?, 1, ?)";
+	db_perform($query, [$search_query, $ip]);
+}
+
+function store_anonymous_uncached_search_query() {
+	$query = "INSERT INTO search (search_query, search_cached, search_ip) VALUES('', 0, '')";
+	db_perform($query, []);
+}
+
+function store_anonymous_cached_search_query() {
+	$query = "INSERT INTO search (search_query, search_cached, search_ip) VALUES('', 1, '')";
+	db_perform($query, []);
 }
 
 function latest_search_query() {
 	$query = "SELECT * FROM search WHERE search_id = (SELECT MAX(search_id) FROM search)";
+	return db_select($query, []);
+}
+
+function latest_ping() {
+	$query = "SELECT * FROM ping WHERE ping_id = (SELECT MAX(ping_id) FROM ping)";
 	return db_select($query, []);
 }

@@ -30,11 +30,11 @@ use PHPUnit\Framework\TestCase;
 final class SearchTest extends TestCase {
 
 	public function test_make_cached_search() {
-		list($results, $time_ms, $total_found) = make_cached_search("test");
-		$this->assertEquals(count($results), 1000);
+		list($results, $time_ms, $total_found) = make_cached_search("test", "", false);
 
 		list($offset_start, $offset_end) = calculate_offsets(1, results_per_page());
 		post_process_results($results, "test");
+		$this->assertEquals(1000, count($results));
 		list($output, $result_count) = deduplicate_results($results, $offset_start, $offset_end);
 
 		$this->assertEquals(10, count($output));
@@ -42,17 +42,64 @@ final class SearchTest extends TestCase {
 
 	public function test_store_search() {
 
-		store_search_query("testing", false);
+		store_uncached_search_query("testing", "127.0.0.1");
 		$search_query = latest_search_query();
 		
 		$this->assertEquals($search_query->search_query, "testing");
+		$this->assertEquals($search_query->search_ip, "127.0.0.1");
 		$this->assertFalse((bool)$search_query->search_cached);
 
-		store_search_query("testing 2", true);
+		store_cached_search_query("testing 2", "127.0.0.1");
 		$search_query = latest_search_query();
 		
 		$this->assertEquals($search_query->search_query, "testing 2");
 		$this->assertTrue((bool)$search_query->search_cached);
+	}
+
+	public function test_search() {
+		$query = "testing_" . uniqid();
+		list($response, $code) = handle_query("/", [
+			"q" => $query,
+			"p" => 1,
+			"a" => 0
+		], "123.123.123.123");
+
+		$json = json_decode($response);
+		$this->assertEquals(200, $code);
+		$this->assertEquals("success", $json->status);
+		$this->assertEquals(0, count($json->results));
+
+		$search_query = latest_search_query();
+		$this->assertEquals($search_query->search_query, $query);
+		$this->assertEquals($search_query->search_ip, "123.123.123.123");
+
+		// Test anonymous search.
+		$query2 = "testing_" . uniqid();
+		list($response, $code) = handle_query("/", [
+			"q" => $query2,
+			"p" => 1,
+			"a" => 1
+		], "123.123.123.123");
+
+		$json = json_decode($response);
+		$this->assertEquals(200, $code);
+		$this->assertEquals("success", $json->status);
+		$this->assertEquals(0, count($json->results));
+
+		$search_query = latest_search_query();
+		$this->assertEquals($search_query->search_query, "");
+		$this->assertEquals($search_query->search_ip, "");
+	}
+
+	public function test_ping() {
+		list($response, $code) = handle_query("/ping", [
+			"data" => "eyJ1IjoiaHR0cHM6Ly9uZXdzLnljb21iaW5hdG9yLmNvbS8iLCJxIjoibmV3cyIsInAiOjJ9",
+		], "12.12.12.12");
+
+		$ping = latest_ping();
+		$this->assertEquals("https://news.ycombinator.com/", $ping->ping_url);
+		$this->assertEquals("news", $ping->ping_query);
+		$this->assertEquals("12.12.12.12", $ping->ping_ip);
 	}
 
 }
