@@ -27,9 +27,10 @@
 
 function get_nodes() {
 	return [
-		"node0002.alexandria.org",
-		"node0004.alexandria.org",
-		"node0005.alexandria.org",
+		"65.21.125.158", //"node0006.alexandria.org",
+		"65.108.7.39", //"node0007.alexandria.org",
+		"135.181.134.249", //"node0008.alexandria.org",
+		"65.108.44.39" //"node0009.alexandria.org",
 	];
 }
 
