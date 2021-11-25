@@ -26,14 +26,16 @@ docker exec -it alexandria-api /bin/bash
 ./phpunit --bootstrap functions.php tests
 
 ## API Endpoints
+### Search
 ```
-https://api.alexandria.org/?q=test%20query&p=1&a=1
+https://api.alexandria.org/?q=test%20query&p=1&a=1&c=a
 ```
 Parameters:
 ```
 q: the query
 p: the page number 1 to 10
 a: anonymous flag, 0 for default behaviour 1 for anonymous search.
+c: cluster (a or b)
 ```
 Response:
 ```
@@ -59,5 +61,22 @@ Response:
          "display_url":"https:\/\/github.com\/dannote\/recattle"
       }
    ]
+}
+```
+
+### Query URL
+```
+https://api.alexandria.org/url?u=http://example.com&c=a
+```
+Parameters:
+```
+u: the url to check if it is in the cluster
+c: cluster (a or b)
+```
+Response:
+```
+{
+	"status":"success",
+	"result":"...TSV DATA..."
 }
 ```

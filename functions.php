@@ -34,9 +34,31 @@ function handle_query($path, $get, $ip) {
 		return handle_search_query($path, $get, $ip);
 	} elseif ($path == "/ping") {
 		return handle_ping_query($path, $get, $ip);
+	} elseif ($path == "/url") {
+		return handle_url_query($path, $get, $ip);
 	} else {
 		return ["404", 404];
 	}
+}
+
+function handle_url_query($path, $get, $ip) {
+
+	list($url, $cluster) = parse_url_input($get);
+
+	[$responses, $time_ms] = make_url_search(get_nodes($cluster), $url);
+
+	$non_empty_response = "";
+	foreach ($responses as $response) {
+		if ($response != "") $non_empty_response = $response;
+	}
+
+	$api_response = [
+		"status" => "success",
+		"result" => $non_empty_response,
+		"time_ms" => $time_ms
+	];
+
+	return [json_encode($api_response), 200];
 }
 
 function handle_ping_query($path, $get, $ip) {
@@ -127,6 +149,22 @@ function parse_input($input) {
 	return [$input["q"], $current_page, (bool)($input["a"] ?? false), $cluster];
 }
 
+function parse_url_input($input) {
+	if (!isset($input["u"]) or $input["u"] == "") {
+		throw new Exception("Missing url string");
+	}
+
+	$cluster = get_active_cluster();
+	if (isset($input['c'])) {
+		$clusters = get_clusters();
+		if (isset($clusters->enabled_clusters->{$input['c']})) {
+			$cluster = $input['c'];
+		}
+	}
+
+	return [$input["u"], $cluster];
+}
+
 function should_deduplicate($query) {
 	return strpos($query, "site:") === false;
 }
@@ -179,6 +217,10 @@ function create_node_url($node, $query) {
 		return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query));
 	}
 	return "http://".$node."/?q=" . str_replace("+", "%20", urlencode($query)) . "&d=a";
+}
+
+function create_node_url_url($node, $url) {
+	return "http://".$node."/?u=" . str_replace("+", "%20", urlencode($url));
 }
 
 function create_curl_handle($url) {
@@ -238,6 +280,45 @@ function make_search($nodes, $query) {
 	curl_multi_close($curl_multi);
 
 	return [$results, $time_ms, $total_found];
+}
+
+function make_url_search($nodes, $input_url) {
+	$curl_multi = curl_multi_init();
+	$curl_handles = [];
+
+	$time_ms = microtime(true);
+
+	foreach ($nodes as $node) {
+
+		$url = create_node_url_url($node, $input_url);
+		$curl = create_curl_handle($url);
+
+		curl_multi_add_handle($curl_multi, $curl);
+		$curl_handles[] = $curl;
+	}
+
+	do {
+		$status = curl_multi_exec($curl_multi, $active);
+		if ($active) {
+			curl_multi_select($curl_multi);
+		}
+	} while ($active && $status == CURLM_OK);
+
+	$time_ms = (microtime(true) - $time_ms) * 1000;
+
+	$results = [];
+	$total_found = 0;
+	foreach($curl_handles as $curl) {
+		$json = curl_multi_getcontent($curl);
+		$result = json_decode($json, true, 512, JSON_INVALID_UTF8_IGNORE);
+		if ($result !== null) {
+			$results[] = $result["response"];
+		}
+		curl_multi_remove_handle($curl_multi, $curl);
+	}
+	curl_multi_close($curl_multi);
+
+	return [$results, $time_ms];
 }
 
 function post_process_results(&$results, $query) {

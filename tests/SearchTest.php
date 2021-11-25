@@ -91,6 +91,18 @@ final class SearchTest extends TestCase {
 		$this->assertEquals($search_query->search_ip, "");
 	}
 
+	public function test_url_search() {
+		list($response, $code) = handle_query("/url", [
+			"u" => "http://example.com/",
+		], "123.123.123.123");
+
+		$json = json_decode($response);
+		$this->assertEquals(200, $code);
+		$this->assertEquals("success", $json->status);
+		$this->assertTrue(strpos($json->result, "http://example.com/") === 0);
+		$this->assertTrue($json->time_ms > 0);
+	}
+
 	public function test_ping() {
 		list($response, $code) = handle_query("/ping", [
 			"data" => "eyJ1IjoiaHR0cHM6Ly9uZXdzLnljb21iaW5hdG9yLmNvbS8iLCJxIjoibmV3cyIsInAiOjJ9",
