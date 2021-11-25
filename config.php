@@ -25,13 +25,40 @@
  * SOFTWARE.
  */
 
-function get_nodes() {
-	return [
-		"65.21.125.158", //"node0006.alexandria.org",
-		"65.108.7.39", //"node0007.alexandria.org",
-		"135.181.134.249", //"node0008.alexandria.org",
-		"65.108.44.39" //"node0009.alexandria.org",
-	];
+$cluster_config_file = json_decode(file_get_contents("cluster.json"));
+
+function get_clusters() {
+	global $cluster_config_file;
+	return $cluster_config_file;
+}
+
+function get_cluster($cluster) {
+	$clusters = get_clusters();
+	if (!isset($clusters->enabled_clusters->{$cluster})) throw new Exception("No such cluster $cluster");
+	return $clusters->enabled_clusters->{$cluster};
+}
+
+function get_hosts() {
+	$clusters = get_clusters();
+	return $clusters->hosts;
+}
+
+function get_active_cluster() {
+	$clusters = get_clusters();
+	return $clusters->active_cluster;
+}
+
+function get_nodes($cluster = "a") {
+	$nodes = [];
+	$cluster = get_cluster($cluster);
+	$hosts = get_hosts();
+	foreach ($cluster->nodes as $node_name) {
+		$host = $hosts->{$node_name} ?? "";
+		if ($host != "") {
+			$nodes[] = $host;
+		}
+	}
+	return $nodes;
 }
 
 function cache_expire() {

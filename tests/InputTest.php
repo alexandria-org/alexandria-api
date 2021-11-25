@@ -40,10 +40,11 @@ final class InputTest extends TestCase {
 	}
 
 	public function test_parse_non_empty_query() {
-		list($query, $current_page, $anonymous) = parse_input(["q" => "test query"]);
+		list($query, $current_page, $anonymous, $cluster) = parse_input(["q" => "test query"]);
 		$this->assertEquals($query, "test query");
 		$this->assertEquals($current_page, 1);
 		$this->assertEquals($anonymous, false);
+		$this->assertEquals($cluster, get_active_cluster());
 	}
 
 	public function test_parse_current_page() {
@@ -89,6 +90,14 @@ final class InputTest extends TestCase {
 		list($offset_start, $offset_end) = calculate_offsets(2, 5);
 		$this->assertEquals($offset_start, 5);
 		$this->assertEquals($offset_end, 10);
+	}
+
+	public function test_cluster_input() {
+		list($query, $current_page, $anonymous, $cluster) = parse_input(["q" => "test query", "p" => 1, "a" => 1, "c" => "b"]);
+		$this->assertEquals($query, "test query");
+		$this->assertEquals($current_page, 1);
+		$this->assertEquals($anonymous, true);
+		$this->assertEquals($cluster, "b");
 	}
 
 }

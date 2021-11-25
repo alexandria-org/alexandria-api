@@ -55,13 +55,13 @@ function parse_ping_data($data) {
 
 function handle_search_query($path, $get, $ip) {
 	try {
-		list($query, $current_page, $anonymous) = parse_input($get);
+		list($query, $current_page, $anonymous, $cluster) = parse_input($get);
 	} catch (Exception $error) {
 		return [error_response($error->getMessage()), 400];
 	}
 
 	list($offset_start, $offset_end) = calculate_offsets($current_page, results_per_page());
-	list($results, $time_ms, $total_found) = make_cached_search($query, $ip, $anonymous);
+	list($results, $time_ms, $total_found) = make_cached_search($cluster, $query, $ip, $anonymous);
 	post_process_results($results, $query);
 	if (should_deduplicate($query)) {
 		list($output, $result_count) = deduplicate_results($results, $offset_start, $offset_end);
@@ -116,7 +116,15 @@ function parse_input($input) {
 	if ($current_page < 1) $current_page = 1;
 	if ($current_page > max_pages()) $current_page = max_pages();
 
-	return [$input["q"], $current_page, (bool)($input["a"] ?? false)];
+	$cluster = get_active_cluster();
+	if (isset($input['c'])) {
+		$clusters = get_clusters();
+		if (isset($clusters->enabled_clusters->{$input['c']})) {
+			$cluster = $input['c'];
+		}
+	}
+
+	return [$input["q"], $current_page, (bool)($input["a"] ?? false), $cluster];
 }
 
 function should_deduplicate($query) {
@@ -134,12 +142,17 @@ function calculate_offsets($current_page, $results_per_page) {
 	return [$offset_start, $offset_end];
 }
 
-function make_cached_search($query, $ip, $anonymous) {
+function gen_cache_key($cluster, $query) {
+	return $cluster . "-" . md5($query);
+}
+
+function make_cached_search($cluster, $query, $ip, $anonymous) {
 	$redis = new Redis();
 	$redis->connect('127.0.0.1', 6379);
 
 	list($results, $time_ms, $total_found) = [[], 0, 0];
-	if ($cache = $redis->get($query)) {
+	$cache_key = gen_cache_key($cluster, $query);
+	if ($cache = $redis->get($cache_key)) {
 		list($results, $time_ms, $total_found) = unserialize($cache);
 		if ($anonymous) {
 			store_anonymous_cached_search_query();
@@ -147,10 +160,10 @@ function make_cached_search($query, $ip, $anonymous) {
 			store_cached_search_query($query, $ip);
 		}
 	} else {
-		$data = make_search(get_nodes(), $query);
+		$data = make_search(get_nodes($cluster), $query);
 		list($results, $time_ms, $total_found) = $data;
-		$redis->set($query, serialize($data));
-		$redis->expire($query, cache_expire());
+		$redis->set($cache_key, serialize($data));
+		$redis->expire($cache_key, cache_expire());
 		if ($anonymous) {
 			store_anonymous_uncached_search_query();
 		} else {

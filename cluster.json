@@ -1,0 +1,48 @@
+{
+	"active_cluster": "a",
+	"hosts": {
+		"node0004.alexandria.org": "65.21.198.211",
+		"node0005.alexandria.org": "95.217.205.112",
+		"node0006.alexandria.org": "65.21.125.158",
+		"node0007.alexandria.org": "65.108.7.39",
+		"node0008.alexandria.org": "135.181.134.249",
+		"node0009.alexandria.org": "65.108.44.39",
+		"node0010.alexandria.org": "65.108.9.237",
+		"node0011.alexandria.org": "135.181.59.77"
+	},
+	"enabled_clusters": {
+		"a": {
+			"name": "alexandria_v1",
+			"version": "1.0",
+			"nodes": [
+				"node0006.alexandria.org",
+				"node0007.alexandria.org",
+				"node0008.alexandria.org",
+				"node0009.alexandria.org"
+			]
+		},
+		"b": {
+			"name": "alexandria_v2",
+			"version": "1.1.3",
+			"nodes": [
+				"node0004.alexandria.org",
+				"node0005.alexandria.org",
+				"node0010.alexandria.org",
+				"node0011.alexandria.org"
+			],
+			"comment": "With new harmonic centrality"
+		},
+		"t": {
+			"name": "alexandria_test",
+			"version": "1.0",
+			"nodes": [
+				"node0006.alexandria.org",
+				"node0007.alexandria.org",
+				"node0008.alexandria.org",
+				"node0009.alexandria.org"
+			]
+		}
+	},
+	"history": [
+	]
+}
