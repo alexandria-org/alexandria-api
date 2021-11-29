@@ -36,7 +36,7 @@
 			"comment": "With new harmonic centrality",
 			"post_processor": "a"
 		},
-		"b": {
+		"c": {
 			"name": "alexandria_v3",
 			"production": true,
 			"version": "1.1.3",
