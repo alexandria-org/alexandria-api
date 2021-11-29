@@ -33,7 +33,7 @@ final class SearchTest extends TestCase {
 		list($results, $time_ms, $total_found) = make_cached_search("t", "test", "", false);
 
 		list($offset_start, $offset_end) = calculate_offsets(1, results_per_page());
-		post_process_results($results, "test");
+		post_process_results("a", "test", $results);
 		$this->assertEquals(1000, count($results));
 		list($output, $result_count) = deduplicate_results($results, $offset_start, $offset_end);
 

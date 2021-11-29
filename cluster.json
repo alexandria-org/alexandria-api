@@ -20,7 +20,8 @@
 				"node0007.alexandria.org",
 				"node0008.alexandria.org",
 				"node0009.alexandria.org"
-			]
+			],
+			"post_processor": "a"
 		},
 		"b": {
 			"name": "alexandria_v2",
@@ -32,7 +33,21 @@
 				"node0010.alexandria.org",
 				"node0011.alexandria.org"
 			],
-			"comment": "With new harmonic centrality"
+			"comment": "With new harmonic centrality",
+			"post_processor": "a"
+		},
+		"b": {
+			"name": "alexandria_v3",
+			"production": true,
+			"version": "1.1.3",
+			"nodes": [
+				"node0004.alexandria.org",
+				"node0005.alexandria.org",
+				"node0010.alexandria.org",
+				"node0011.alexandria.org"
+			],
+			"comment": "With new harmonic centrality",
+			"post_processor": "b"
 		},
 		"t": {
 			"name": "alexandria_test",

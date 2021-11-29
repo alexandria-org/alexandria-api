@@ -40,11 +40,12 @@ final class InputTest extends TestCase {
 	}
 
 	public function test_parse_non_empty_query() {
-		list($query, $current_page, $anonymous, $cluster) = parse_input(["q" => "test query"]);
+		list($query, $current_page, $anonymous, $cluster, $post_processor) = parse_input(["q" => "test query"]);
 		$this->assertEquals($query, "test query");
 		$this->assertEquals($current_page, 1);
 		$this->assertEquals($anonymous, false);
 		$this->assertEquals($cluster, get_active_cluster());
+		$this->assertEquals($post_processor, "a");
 	}
 
 	public function test_parse_current_page() {
@@ -98,6 +99,16 @@ final class InputTest extends TestCase {
 		$this->assertEquals($current_page, 1);
 		$this->assertEquals($anonymous, true);
 		$this->assertEquals($cluster, "b");
+	}
+
+	public function test_post_processor_input() {
+		list($query, $current_page, $anonymous, $cluster, $post_processor) = parse_input(["q" => "test query", "p" => 1, "a" => 1, "c" => "a",
+			"r" => "b"]);
+		$this->assertEquals($query, "test query");
+		$this->assertEquals($current_page, 1);
+		$this->assertEquals($anonymous, true);
+		$this->assertEquals($cluster, "a");
+		$this->assertEquals($post_processor, "b");
 	}
 
 }
