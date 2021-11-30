@@ -1,6 +1,9 @@
 <?php
 
 function post_process_results($post_processor, $query, &$results) {
+	if ($post_processor == "") {
+		$post_processor = "a";
+	}
 
 	if ($post_processor == "a") {
 		post_processor_a($query, $results);
@@ -157,6 +160,11 @@ function post_processor_b($query, &$results) {
 		$result["is_subdomain"] = 0;
 		$result["domain"] = $domain;
 
+		$result["exact_match_domain"] = 0;
+		$result["exact_match_title"] = 0;
+		$result["exact_match_snippet"] = 0;
+
+
 		if (count($domain_parts) == 3 and $domain_parts[0] == "www") {
 			$result["is_subdomain"] = 0;
 		} else if (count($domain_parts) < 3) {
@@ -176,7 +184,18 @@ function post_processor_b($query, &$results) {
 		if (stripos($title, $query) !== false){
 			$result["exact_match"] += 1;
 		}
-		if (stripos($domain, $query) !== false or stripos($domain, str_replace(" ","",$query)) !== false){
+
+		if (stripos($title, $query) !== false){
+			$result["exact_match_title"] = 1;
+		}
+		if (stripos($snippet, $query) !== false){
+			$result["exact_match_snippet"] = 1;
+		}
+		if (stripos($domain, str_replace(" ", "", $query)) !== false or stripos($domain, str_replace(" ", "-", $query)) !== false){
+			$result["exact_match_domain"] = 1;
+		}
+		
+		/*if (stripos($domain, $query) !== false or stripos($domain, str_replace(" ","",$query)) !== false){
 			$result["exact_match"] += 2;
 		}
 		
@@ -188,13 +207,18 @@ function post_processor_b($query, &$results) {
 			}else if (stripos($domain, $word) !== false or stripos($domain, str_replace(" ","",$word)) !== false){
 				$result["phrase_match"] += 0.8;
 			}
-		}
+		}*/
 
+		$original_score = $result["score"];
+		//var_dump($result);
+		/*
 		if ($result["exact_match"] > 0) {
 			$result["score"] *= $result["exact_match"];
 		} else {
 			$result["score"] *= 0.5;
 		}
+		
+		
 		if ($result["phrase_match"] > 0) {
 			$result["score"] *= 1 + $result["phrase_match"]/count($searchWords);
 		} else {
@@ -204,29 +228,49 @@ function post_processor_b($query, &$results) {
 		if ($result["is_old"]) {
 			$result["score"] *= 0.9;
 		}
+		
+
 		if ($url_query) {
 			$result["score"] *= 0.9;
 		}
+		*/
 		
 		if ($path == "/") {
-			$result["score"] *= 2;
+			$result["score"] *= 1.2;
+		}
+
+		if ($result["is_old"]) {
+			$result["score"] *= 0.9;
+		}
+
+		if ($result["exact_match_title"]) {
+			$result["score"] *= 1.3;
+		}
+
+		if ($result["exact_match_snippet"]) {
+			$result["score"] *= 1.3;
+		}
+		if ($result["exact_match_domain"]) {
+			$result["score"] *= 1.3;
 		}
 		
 		if (strpos($url,"?")) {
-			$result["score"] *= 0.7;
+			$result["score"] *= 0.5;
 		}
-
+	
 		// give score bonus to short paths.
-		$result["score"] *= 1-(strlen($path)*0.001);
-		
+		$result["score"] *= 1-(strlen($path)*0.01);
+			
+		//var_dump($result);
+		//die;
+		$result["title"] = round($original_score, 2)." - ". round($result["score"], 2)." - ".$result["title"];
 		$results[$i] = $result;
 	}
 
 	// Sort the results by score
 	array_multisort(array_column($results, "score"), SORT_DESC, $results);
 
-	// Limit results to 1000
-	$results = array_slice($results, 0, 1000);
+
 }
 
 
