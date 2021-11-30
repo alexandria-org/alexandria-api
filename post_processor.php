@@ -263,7 +263,7 @@ function post_processor_b($query, &$results) {
 			
 		//var_dump($result);
 		//die;
-		$result["title"] = round($original_score, 2)." - ". round($result["score"], 2)." - ".$result["title"];
+		//$result["title"] = round($original_score, 2)." - ". round($result["score"], 2)." - ".$result["title"];
 		$results[$i] = $result;
 	}
 
