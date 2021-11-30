@@ -73,6 +73,7 @@ echo "server {
 
 mysql -u root -e "create user if not exists alexandria@localhost identified by ''"
 mysql -u root -e "grant all privileges on *.* to alexandria@localhost with grant option"
+mysql -u root -e "create table if not exists alexandria"
 
 # Write phpmyadmin config.
 
@@ -90,4 +91,6 @@ echo "<?php
 \$cfg['UploadDir'] = '';
 \$cfg['SaveDir'] = '';
 " > /etc/phpmyadmin/config.inc.php
+
+curl https://api.alexandria.org/schema | mysql alexandria
 
