@@ -37,6 +37,8 @@ function handle_query($path, $get, $ip) {
 		return handle_ping_query($path, $get, $ip);
 	} elseif ($path == "/url") {
 		return handle_url_query($path, $get, $ip);
+	} elseif ($path == "/schema") {
+		return [db_schema(), 200];
 	} else {
 		return ["404", 404];
 	}

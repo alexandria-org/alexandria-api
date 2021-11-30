@@ -25,10 +25,26 @@
  * SOFTWARE.
  */
 
+function db_name() {
+	return 'alexandria';
+}
+
+function db_host() {
+	return '';
+}
+
+function db_user() {
+	return 'alexandria';
+}
+
+function db_pass() {
+	return '';
+}
+
 function connect_db() {
-	$dsn = 'mysql:dbname=alexandria;host=127.0.0.1';
-	$user = 'alexandria';
-	$password = '';
+	$dsn = 'mysql:dbname=' . db_name() . ';host=' . db_host();
+	$user = db_user();
+	$password = db_pass();
 	$dbh = new PDO($dsn, $user, $password, [
 		PDO::ATTR_PERSISTENT => false,
 		PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -40,6 +56,10 @@ function connect_db() {
 	$dbh->query("SET NAMES utf8mb4");
 
 	return $dbh;
+}
+
+function db_schema() {
+	return shell_exec("mysqldump --no-data -u " . db_user() . " --password=" . db_pass() . " " . db_name());
 }
 
 $_dbh = connect_db();
