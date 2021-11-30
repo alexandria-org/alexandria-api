@@ -73,7 +73,7 @@ echo "server {
 
 mysql -u root -e "create user if not exists alexandria@localhost identified by ''"
 mysql -u root -e "grant all privileges on *.* to alexandria@localhost with grant option"
-mysql -u root -e "create table if not exists alexandria"
+mysql -u root -e "create database if not exists alexandria"
 
 # Write phpmyadmin config.
 
