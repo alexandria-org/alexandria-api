@@ -6,8 +6,41 @@ function post_process_results($post_processor, $query, &$results) {
 		post_processor_a($query, $results);
 	} elseif ($post_processor == "b") {
 		post_processor_b($query, $results);
+	} else {
+		post_processor_default($query, $results);
 	}
 
+}
+
+function post_processor_default($query, &$results) {
+
+	for ($i = 0; $i < count($results); $i++) {
+
+		$result = $results[$i];
+
+		$domain = parse_url($results[$i]["url"], PHP_URL_HOST);
+		$domain_parts = explode(".", $domain);
+
+		$result["exact_match"] = 0;
+		$result["phrase_match"] = 0;
+		$result["year"] = 9999;
+		$result["is_old"] = 0;
+		$result["is_subdomain"] = 0;
+		$result["domain"] = $domain;
+
+		if (count($domain_parts) == 3 and $domain_parts[0] == "www") {
+			$result["is_subdomain"] = 0;
+		} else if (count($domain_parts) < 3) {
+			$result["is_subdomain"] = 0;
+		} else {
+			$result["is_subdomain"] = 1;
+		}
+
+		$results[$i] = $result;
+	}
+
+	// Limit results to 1000
+	$results = array_slice($results, 0, 1000);
 }
 
 function post_processor_a($query, &$results) {
