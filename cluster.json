@@ -12,7 +12,7 @@
 	},
 	"enabled_clusters": {
 		"a": {
-			"name": "alexandria_v3",
+			"name": "alexandria_v4",
 			"production": true,
 			"version": "1.2.7",
 			"nodes": [
