@@ -12,14 +12,13 @@
 	},
 	"enabled_clusters": {
 		"a": {
-			"name": "alexandria_v1",
+			"name": "alexandria_v3",
 			"production": true,
-			"version": "1.0",
+			"version": "1.2.7",
 			"nodes": [
 				"node0006.alexandria.org",
 				"node0007.alexandria.org",
-				"node0008.alexandria.org",
-				"node0009.alexandria.org"
+				"node0008.alexandria.org"
 			],
 			"post_processor": "a"
 		},
