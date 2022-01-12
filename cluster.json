@@ -20,7 +20,7 @@
 				"node0007.alexandria.org",
 				"node0008.alexandria.org"
 			],
-			"post_processor": "a"
+			"post_processor": "b"
 		},
 		"b": {
 			"name": "alexandria_v2",

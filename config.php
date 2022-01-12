@@ -27,6 +27,10 @@
 
 $cluster_config_file = json_decode(file_get_contents("cluster.json"));
 
+function enable_cache() {
+	return false;
+}
+
 function get_clusters() {
 	global $cluster_config_file;
 	return $cluster_config_file;

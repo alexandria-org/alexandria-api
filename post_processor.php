@@ -41,9 +41,6 @@ function post_processor_default($query, &$results) {
 
 		$results[$i] = $result;
 	}
-
-	// Limit results to 1000
-	$results = array_slice($results, 0, 1000);
 }
 
 function post_processor_a($query, &$results) {
@@ -134,9 +131,6 @@ function post_processor_a($query, &$results) {
 
 	// Sort the results by score
 	array_multisort(array_column($results, "score"), SORT_DESC, $results);
-
-	// Limit results to 1000
-	$results = array_slice($results, 0, 1000);
 }
 
 function post_processor_b($query, &$results) {

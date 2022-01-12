@@ -93,6 +93,7 @@ function handle_search_query($path, $get, $ip) {
 	} else {
 		list($output, $result_count) = paginate_results($results, $offset_start, $offset_end);
 	}
+	limit_results($results, 1000);
 	add_display_url($output);
 	$page_max = calculate_page_max($result_count);
 	$api_response = get_api_response($time_ms, $total_found, $page_max, $output);
@@ -195,7 +196,7 @@ function make_cached_search($cluster, $query, $ip, $anonymous) {
 
 	list($results, $time_ms, $total_found) = [[], 0, 0];
 	$cache_key = gen_cache_key($cluster, $query);
-	if ($cache = $redis->get($cache_key)) {
+	if (enable_cache() && ($cache = $redis->get($cache_key))) {
 		list($results, $time_ms, $total_found) = unserialize($cache);
 		if ($anonymous) {
 			store_anonymous_cached_search_query();
@@ -395,5 +396,9 @@ function make_response($api_response, $callback) {
 	} else {
 		return json_encode($api_response);
 	}
+}
+
+function limit_results($results, $limit) {
+	return array_slice($results, 0, $limit);
 }
 
