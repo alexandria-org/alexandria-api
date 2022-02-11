@@ -31,7 +31,7 @@ handle_cors();
 
 header("Content-Type: application/json");
 
-list($response, $code) = handle_query(strtok($_SERVER["REQUEST_URI"], "?"), $_GET, $_SERVER["REMOTE_ADDR"]);
+list($response, $code) = handle_query(strtok($_SERVER["REQUEST_URI"], "?"), $_GET, $_GET['ip'] ?? $_SERVER["REMOTE_ADDR"]);
 
 http_response_code($code);
 echo $response;

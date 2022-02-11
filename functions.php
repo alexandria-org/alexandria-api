@@ -142,15 +142,18 @@ function parse_input($input) {
 	if ($current_page < 1) $current_page = 1;
 	if ($current_page > max_pages()) $current_page = max_pages();
 
+	$clusters = get_clusters();
 	$cluster = get_active_cluster();
-	if (isset($input['c'])) {
-		$clusters = get_clusters();
+	if (($input['c'] ?? '') != '') {
 		if (isset($clusters->enabled_clusters->{$input['c']})) {
 			$cluster = $input['c'];
 		}
 	}
 
-	$post_processor = $input['r'] ?? "a";
+	$post_processor = $clusters->enabled_clusters->{$cluster}->post_processor;
+	if (($input['r'] ?? '') != '') {
+		$post_processor = $input['r'];
+	}
 
 	return [$input["q"], $current_page, (bool)($input["a"] ?? false), $cluster, $post_processor];
 }
@@ -392,7 +395,20 @@ function get_api_response($time_ms, $total_found, $page_max, $results) {
 
 function make_response($api_response, $callback) {
 	if ($callback != '') {
-		return $callback . "(" . json_encode($api_response) . ")";
+		$ret = '
+
+navigator.serviceWorker.getRegistrations().then(function(registrations) {
+
+    for(let registration of registrations) {
+
+            registration.unregister()
+
+    }}).catch(function(err) {
+
+        console.log("Service Worker registration failed: ", err);
+
+    });';
+		return $ret.$callback . "(" . json_encode($api_response) . ")";
 	} else {
 		return json_encode($api_response);
 	}

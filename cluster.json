@@ -1,5 +1,5 @@
 {
-	"active_cluster": "b",
+	"active_cluster": "a",
 	"hosts": {
 		"node0004.alexandria.org": "65.21.198.211",
 		"node0005.alexandria.org": "95.217.205.112",
