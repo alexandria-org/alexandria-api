@@ -74,6 +74,15 @@ function handle_ping_query($path, $get, $ip) {
 	return ["", 200];
 }
 
+function make_ping_data($query, $url, $pos) {
+	$data = [
+		'u' => $url,
+		'q' => $query,
+		'p' => $pos,
+	];
+	return base64_encode(json_encode($data));
+}
+
 function parse_ping_data($data) {
 	return json_decode(base64_decode($data));
 }
@@ -88,6 +97,7 @@ function handle_search_query($path, $get, $ip) {
 	list($offset_start, $offset_end) = calculate_offsets($current_page, results_per_page());
 	list($results, $time_ms, $total_found) = make_cached_search($cluster, $query, $ip, $anonymous);
 	post_process_results($post_processor, $query, $results);
+	add_ping($query, $results);
 	if (should_deduplicate($query)) {
 		list($output, $result_count) = deduplicate_results($results, $offset_start, $offset_end);
 	} else {
@@ -376,6 +386,12 @@ function paginate_results($results, $offset_start, $offset_end) {
 function add_display_url(&$results) {
 	foreach ($results as &$result) {
 		$result["display_url"] = make_display_url($result["url"]);
+	}
+}
+
+function add_ping($query, &$results) {
+	foreach ($results as $pos => &$result) {
+		$result["ping"] = "https://api.alexandria.org/ping?data=" . make_ping_data($query, $result["url"], $pos);
 	}
 }
 
