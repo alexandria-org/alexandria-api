@@ -8,7 +8,8 @@
 		"node0008.alexandria.org": "135.181.134.249",
 		"node0009.alexandria.org": "65.108.44.39",
 		"node0010.alexandria.org": "65.108.9.237",
-		"node0011.alexandria.org": "135.181.59.77"
+		"node0011.alexandria.org": "135.181.59.77",
+		"node0015.alexandria.org": "65.108.200.84"
 	},
 	"enabled_clusters": {
 		"a": {
@@ -47,6 +48,16 @@
 			],
 			"comment": "With new harmonic centrality",
 			"post_processor": "b"
+		},
+		"d": {
+			"name": "alexandria_v4",
+			"production": true,
+			"version": "2.1.1",
+			"nodes": [
+				"node0015.alexandria.org"
+			],
+			"comment": "Completely new index",
+			"post_processor": "c"
 		},
 		"t": {
 			"name": "alexandria_test",
