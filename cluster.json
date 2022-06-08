@@ -57,7 +57,7 @@
 				"node0015.alexandria.org"
 			],
 			"comment": "Completely new index",
-			"post_processor": "c"
+			"post_processor": "b"
 		},
 		"t": {
 			"name": "alexandria_test",
