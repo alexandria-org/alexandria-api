@@ -50,7 +50,7 @@
 			"post_processor": "b"
 		},
 		"d": {
-			"name": "alexandria_v4",
+			"name": "alexandria_2_v1",
 			"production": true,
 			"version": "2.1.1",
 			"nodes": [
