@@ -391,7 +391,7 @@ function add_display_url(&$results) {
 
 function add_ping($query, &$results) {
 	foreach ($results as $pos => &$result) {
-		$result["ping"] = "https://api.alexandria.org/ping?data=" . make_ping_data($query, $result["url"], $pos);
+		$result["ping"] = "https://api.alexandria.org/ping?data=" . make_ping_data($query, $result["url"], $pos + 1);
 	}
 }
 
